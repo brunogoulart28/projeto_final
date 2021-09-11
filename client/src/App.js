@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ArmazenarContrato from "./contracts/ArmazenadorContrato.json";
+import Armazenador from "./contracts/ArmazenadorContrato.json";
 import getWeb3 from "./getWeb3";
 import { StyledDropZone } from "react-drop-zone";
 import FileIcon, { defaultStyles } from "react-file-icon";
@@ -12,7 +12,7 @@ import Moment from "react-moment";
 import "./App.css";
 
 class App extends Component {
-  state = { ArmazenadorContrato: [], web3: null, accounts: null, contract: null };
+  state = { armazenadorContrato: [], web3: null, accounts: null, contract: null };
 
   componentDidMount = async () => {
     try {
@@ -24,15 +24,20 @@ class App extends Component {
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = ArmazenarContrato.networks[networkId];
+      const deployedNetwork = Armazenador.networks[networkId];
       const instance = new web3.eth.Contract(
-        ArmazenarContrato.abi,
+        Armazenador.abi,
         deployedNetwork && deployedNetwork.address,
       );
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       this.setState({ web3, accounts, contract: instance }, this.getArquivos);
+																	   
+															 
+												   
+						
+		
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -51,7 +56,7 @@ class App extends Component {
           .call({ from: accounts[0] });
         let arquivos = [];
         for (let i = 0; i < quantidadeArquivos; i++) {
-          let arquivo = await contract.methods.getArquivos(i).call({from: accounts[0]});
+          let arquivo = await contract.methods.getArquivo(i).call({from: accounts[0]});
           arquivos.push(arquivo);
         }
         this.setState({armazenadorContrato: arquivos});
@@ -78,7 +83,7 @@ class App extends Component {
   }
 
   render() {
-    const {ArmazenadorContrato} = this.state;
+    const {armazenadorContrato} = this.state;
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
@@ -95,7 +100,7 @@ class App extends Component {
               </tr>
             </thead>
             <tbody>
-              {ArmazenadorContrato !== [] ? ArmazenadorContrato.map((item, key) =>(
+              {armazenadorContrato !== [] ? armazenadorContrato.map((item, key) =>(
                 <tr>
                 <th>
                   <FileIcon 
