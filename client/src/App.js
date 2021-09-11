@@ -45,13 +45,13 @@ class App extends Component {
   getArquivos = async () => {
     //TODO:
     try{
-        const {account, contract} = this.state;
+        const {accounts, contract} = this.state;
         let quantidadeArquivos = await contract.methods
           .getLength().
-          call({ from: account[0] });
+          call({ from: accounts[0] });
         let arquivos = [];
         for (let i = 0; i < quantidadeArquivos; i++) {
-          let arquivo = await contract.method.getArquivos(i).call({from: account[0]});
+          let arquivo = await contract.methods.getArquivos(i).call({from: accounts[0]});
           arquivos.push(arquivos);
         }
         this.setState({armazenadorContrato: arquivos});
@@ -67,7 +67,10 @@ class App extends Component {
       const stream = fileReaderPullStream(arquivo);
       const resultado = await ipfs.add(stream);
       const timestamp = Math.round(+new Date() /1000);
-      const tipo = arquivo.name.substr(arquivo.name.lastIndexOf(".")+1);
+      const tipoArquivo = arquivo.name.substr(arquivo.name.lastIndexOf(".")+1);
+      let uploades = await  contract.methods.add(resultado[0].hash, arquivo.name, tipoArquivo, timestamp).send({from: accounts[0], gas:300000});
+      console.log(uploades);
+      this.getArquivos();
       debugger;
     } catch (error) {
       console.log(error);
