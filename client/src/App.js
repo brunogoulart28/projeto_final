@@ -32,16 +32,17 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.getArquivos);
-																	   
-															 
-												   
-						
-		
+      this.setState({ web3, accounts, contract: instance }, this.getArquivos);	
+      web3.currentProvider.publicConfigStore.on('update', async () => {
+        const contaAlterada = await web3.eth.getAccounts();
+        this.setState({accounts: contaAlterada});
+        this.getArquivos();
+      })
+
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
-        `Failed to load web3, accounts, or contract. Check console for details.`,
+        `Failed to load web3, accounts, or contract. Check console for details.`
       );
       console.error(error);
     }
@@ -80,7 +81,7 @@ class App extends Component {
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   render() {
     const {armazenadorContrato} = this.state;
@@ -114,7 +115,7 @@ class App extends Component {
                   <Moment format="DD/MM/YYYY" unix>{item[3]}</Moment>
                 </th>
                 </tr>
-              )) : null};
+              )) : null}
             </tbody>
           </Table>
         </div>
