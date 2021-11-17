@@ -6,13 +6,20 @@ import FileIcon, { defaultStyles } from "react-file-icon";
 import "react-drop-zone/dist/styles.css";
 import "bootstrap/dist/css/bootstrap.css";
 import { Table } from "reactstrap";
-import fileReaderPullStream from 'pull-file-reader';
-import ipfs from './utils/ipfs';
+import fileReaderPullStream from "pull-file-reader";
+import ipfs from "./utils/ipfs";
 import Moment from "react-moment";
 import "./App.css";
+import Footer from "./components/Footer/Footer";
+import Header from "./components/Header/Header";
 
 class App extends Component {
-  state = { armazenadorContrato: [], web3: null, accounts: null, contract: null };
+  state = {
+    armazenadorContrato: [],
+    web3: null,
+    accounts: null,
+    contract: null,
+  };
 
   componentDidMount = async () => {
     try {
@@ -24,25 +31,22 @@ class App extends Component {
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = Armazenador.networks[networkId];
-      const instance = new web3.eth.Contract(
+      let deployedNetwork = Armazenador.networks[networkId];
+      const armazenadorInstance = new web3.eth.Contract(
         Armazenador.abi,
-        deployedNetwork && deployedNetwork.address,
+        deployedNetwork && deployedNetwork.address
       );
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.getArquivos);	
-      web3.currentProvider.publicConfigStore.on('update', async () => {
-        const contaAlterada = await web3.eth.getAccounts();
-        this.setState({accounts: contaAlterada});
-        this.getArquivos();
-      })
-
+      this.setState(
+        { web3, accounts, contract: armazenadorInstance },
+        this.getArquivos
+      );
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
-        `Failed to load web3, accounts, or contract. Check console for details.`
+        `Falha ao carregar web3, contas ou contrato. Verifique se Ganache e IPFS estão iniciados`
       );
       console.error(error);
     }
@@ -50,31 +54,37 @@ class App extends Component {
 
   getArquivos = async () => {
     //TODO:
-    try{
-        const {accounts, contract} = this.state;
-        let quantidadeArquivos = await contract.methods
-          .getLength()
+    try {
+      const { accounts, contract } = this.state;
+      let quantidadeArquivos = await contract.methods
+        .getLength()
+        .call({ from: accounts[0] });
+      let arquivos = [];
+      for (let i = 0; i < quantidadeArquivos; i++) {
+        let arquivo = await contract.methods
+          .getArquivo(i)
           .call({ from: accounts[0] });
-        let arquivos = [];
-        for (let i = 0; i < quantidadeArquivos; i++) {
-          let arquivo = await contract.methods.getArquivo(i).call({from: accounts[0]});
-          arquivos.push(arquivo);
-        }
-        this.setState({armazenadorContrato: arquivos});
-    } catch(error){
+        arquivos.push(arquivo);
+      }
+      this.setState({ armazenadorContrato: arquivos });
+    } catch (error) {
       console.log(error);
     }
-  }
+  };
 
-  onDrop = async (arquivo) =>{
+  onDrop = async (arquivo) => {
     //TODO:
     try {
-      const {contract, accounts} = this.state;
+      const { contract, accounts } = this.state;
       const stream = fileReaderPullStream(arquivo);
       const resultado = await ipfs.add(stream);
-      const timestamp = Math.round(+new Date() /1000);
-      const tipoArquivo = arquivo.name.substr(arquivo.name.lastIndexOf(".")+1);
-      let uploaded = await contract.methods.add(resultado[0].hash, arquivo.name, tipoArquivo, timestamp).send({from: accounts[0], gas:300000});
+      const timestamp = Math.round(+new Date() / 1000);
+      const tipoArquivo = arquivo.name.substr(
+        arquivo.name.lastIndexOf(".") + 1
+      );
+      let uploaded = await contract.methods
+        .add(resultado[0].hash, arquivo.name, tipoArquivo, timestamp)
+        .send({ from: accounts[0], gas: 160000 });
       console.log(uploaded);
       this.getArquivos();
       debugger;
@@ -84,41 +94,55 @@ class App extends Component {
   };
 
   render() {
-    const {armazenadorContrato} = this.state;
+    const { armazenadorContrato } = this.state;
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
       <div className="App">
+        <Header />
         <div className="container pt-5">
-          <StyledDropZone onDrop={this.onDrop}/>
+          <StyledDropZone onDrop={this.onDrop}>
+            <p>TEste</p>
+          </StyledDropZone>
           <Table>
             <thead>
               <tr>
-                <th width="5%" scope="row">Tipo</th>
+                <th width="5%" scope="row">
+                  Tipo
+                </th>
                 <th className="text-left">Nome do Arquivo</th>
                 <th className="text-right">Data</th>
               </tr>
             </thead>
             <tbody>
-              {armazenadorContrato !== [] ? armazenadorContrato.map((item, key) =>(
-                <tr>
-                <th>
-                  <FileIcon 
-                    size={30} 
-                    extension={item[2]} 
-                    {...defaultStyles[item[2]]}
-                    />
-                </th>
-                <th className="text-left"><a href={"https://ipfs.io/ipfs/"+item[0]}>{item[1]}</a></th>
-                <th className="text-right">
-                  <Moment format="DD/MM/YYYY" unix>{item[3]}</Moment>
-                </th>
-                </tr>
-              )) : null}
+              {armazenadorContrato !== []
+                ? armazenadorContrato.map((item, key) => (
+                    <tr>
+                      <th>
+                        <FileIcon
+                          size={30}
+                          extension={item[2]}
+                          {...defaultStyles[item[2]]}
+                        />
+                      </th>
+                      <th className="text-left">
+                        <a href={"https://ipfs.io/ipfs/" + item[0]}>
+                          {item[1]}
+                        </a>
+                      </th>
+                      <th className="text-right">
+                        <Moment format="DD/MM/YYYY" unix>
+                          {item[3]}
+                        </Moment>
+                      </th>
+                    </tr>
+                  ))
+                : null}
             </tbody>
           </Table>
         </div>
+        <Footer />
       </div>
     );
   }

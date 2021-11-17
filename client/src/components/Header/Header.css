@@ -1,0 +1,15 @@
+.app-header {
+  padding: 1rem;
+  background-color: rgb(233, 252, 184);
+  position: initial;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  font-size: 1.4pc;
+}
+
+.app-header__logo {
+  background: #999;
+  height: 25px;
+  width: 100px;
+}
