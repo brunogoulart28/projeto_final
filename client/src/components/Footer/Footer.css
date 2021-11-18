@@ -1,7 +1,6 @@
 .app-footer {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: rgb(233, 252, 184);
+  padding: 0.1rem;
+  background-color: rgb(217, 223, 202);
   position: fixed;
   bottom: 0;
   left: 0;

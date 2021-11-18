@@ -84,7 +84,7 @@ class App extends Component {
       );
       let uploaded = await contract.methods
         .add(resultado[0].hash, arquivo.name, tipoArquivo, timestamp)
-        .send({ from: accounts[0], gas: 160000 });
+        .send({ from: accounts[0], gas: 300000 });
       console.log(uploaded);
       this.getArquivos();
       debugger;
